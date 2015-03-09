@@ -2,12 +2,26 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 )
+
+var (
+	resultsCount int
+)
+
+func init() {
+	const (
+		defaultResultsCount = 30
+		usage               = ""
+	)
+	flag.IntVar(&resultsCount, "count", defaultResultsCount, usage)
+	flag.IntVar(&resultsCount, "c", defaultResultsCount, usage)
+}
 
 type Item struct {
 	Score int    `json:"score"`
@@ -16,6 +30,7 @@ type Item struct {
 }
 
 func main() {
+	flag.Parse()
 	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty")
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +63,7 @@ func main() {
 		}
 		close(done)
 	}(ids)
-	for _, id := range topIDs[:10] {
+	for _, id := range topIDs[:resultsCount] {
 		ids <- id
 	}
 	close(ids)
